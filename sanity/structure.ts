@@ -1,7 +1,9 @@
-import type {StructureResolver} from 'sanity/structure'
+// sanity/structure.ts
+// Platzhalter-Structure – aktuell nicht aktiv verwendet.
+// Diese Datei existiert nur, damit TypeScript beim Build nicht meckert.
 
-// https://www.sanity.io/docs/structure-builder-cheat-sheet
-export const structure: StructureResolver = (S) =>
-  S.list()
-    .title('Content')
-    .items(S.documentTypeListItems())
+export const structure = () => {
+  // Wenn du später eine eigene Studio-Struktur möchtest,
+  // kannst du hier den Structure Builder konfigurieren.
+  return null;
+};
