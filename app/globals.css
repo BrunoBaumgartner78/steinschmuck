@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
+/* ----- Grundfarben (Light) ----------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f4ef;      /* Seitenhintergrund */
+  --foreground: #111827;      /* Standardtext */
+
+  --card-bg: #f7f4ef;         /* Karten (z.B. Warenkorb, Produkt) */
+  --card-fg: #111827;
+  --card-border: #e5ded0;
+
+  --accent: #c57a3b;          /* Hauptakzent (Buttons) */
+  --accent-fg: #111827;
 }
 
+/* Tailwind-Theme-Token aus den Variablen */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--card-fg);
+  --color-card-border: var(--card-border);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-fg);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* ----- Dark-Mode über prefers-color-scheme -------------- */
+/* Falls du next-themes mit .dark-Klasse nutzt, kannst du
+   das einfach auf `html.dark { ... }` umstellen. */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Karten (Light) */
+  --card-bg: #f7f4ef;
+  --card-fg: #111827;
+  --card-border: #e5e7eb;
+  --card-hover-bg: #f0ebe1;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #020617;
+    --foreground: #e5e7eb;
+
+    /* Karten (Dark) */
+    --card-bg: #020617;      /* nahezu schwarz-blau */
+    --card-fg: #e5e7eb;
+    --card-border: #1f2937;
+    --card-hover-bg: #030712;
   }
 }
 
+
+/* Globaler Body-Style */
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* 🌍 Standard-Scrollbar für die ganze Seite */
+
+/* Firefox */
+html {
+  scrollbar-width: thin; /* dünner, aber noch gut bedienbar */
+  scrollbar-color: #c57a3b #f5f5f4; /* Thumb | Track */
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    scrollbar-color: #facc15 #020617;
+  }
+}
+
+/* Chrome, Edge, Safari */
+html::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track {
+  background: #f5f5f4;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c57a3b, #8b4f22);
+  border-radius: 999px;
+  border: 2px solid #f5f5f4; /* sorgt für mehr „Hitbox“ */
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e29a4c, #a85c24);
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  html::-webkit-scrollbar-track {
+    background: #020617;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #facc15, #c57a3b);
+    border-color: #020617;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #fde047, #f59e0b);
+  }
+}
+
