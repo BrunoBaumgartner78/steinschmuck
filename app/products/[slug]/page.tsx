@@ -1,102 +1,112 @@
 // app/products/[slug]/page.tsx
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { sanityClient } from "../../../sanity/lib/client";
-import { allProductsQuery } from "../../../sanity/lib/queries";
+import { sanityClient } from "@/sanity/lib/client";
+import { productBySlugQuery } from "@/sanity/lib/queries";
 import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
-
-type MetalType = "gold" | "silver" | undefined;
 
 type Product = {
   _id: string;
   title: string;
-  slug: string;
+  slug: string; // wir projizieren slug.current → slug in der GROQ-Query
   price: number;
   description?: string;
-  images?: string[];
+  images?: string[]; // in der Query: "images": images[].asset->url
   stone?: string;
-  metalType?: MetalType;
-  goldKarat?: string;
-  silverFineness?: string;
+  metal?: string;
+  metalType?: "gold" | "silver" | null;
+  goldKarat?: string | null;
+  silverFineness?: string | null;
   colorTheme?: string | null;
 };
 
-export default function ProductPage() {
-  const params = useParams();
-  const slugParam = (params?.slug as string | undefined) ?? "";
+type PageParams = {
+  params: { slug: string };
+};
 
-  const [product, setProduct] = useState<Product | null>(null);
-  const [allSlugs, setAllSlugs] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
+// Produkt aus Sanity holen
+async function getProduct(slug: string): Promise<Product | null> {
+  const product = await sanityClient.fetch<Product | null>(productBySlugQuery, {
+    slug,
+  });
+  return product ?? null;
+}
 
-  // Bei Slug-Wechsel wieder erstes Bild wählen
-  useEffect(() => {
-    setActiveImageIndex(0);
-  }, [slugParam]);
+/**
+ * SEO / OG / Twitter pro Produkt
+ */
+export async function generateMetadata(
+  { params }: PageParams
+): Promise<Metadata> {
+  const product = await getProduct(params.slug);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const products = await sanityClient.fetch<Product[]>(allProductsQuery);
-
-        setAllSlugs(products.map((p) => p.slug ?? "(kein slug)"));
-
-        const normalize = (value: string | undefined | null) =>
-          (value ?? "")
-            .toString()
-            .normalize("NFKC")
-            .toLowerCase()
-            .trim();
-
-        const found = products.find(
-          (p) => normalize(p.slug) === normalize(slugParam)
-        );
-
-        setProduct(found ?? null);
-      } catch (e) {
-        console.error("Fehler beim Laden des Produkts:", e);
-        setProduct(null);
-      } finally {
-        setLoading(false);
-      }
+  if (!product) {
+    return {
+      title: "Produkt nicht gefunden",
+      description:
+        "Dieses Schmuckstück existiert nicht oder ist nicht mehr verfügbar.",
+      robots: { index: false, follow: false },
     };
-
-    load();
-  }, [slugParam]);
-
-  if (loading) {
-    return (
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <p className="text-sm text-neutral-500 dark:text-slate-300">
-          Produkt wird geladen …
-        </p>
-      </main>
-    );
   }
+
+  const imageUrl = product.images?.[0] ?? "/og-default.jpg";
+  const url = `https://beryll.ch/products/${product.slug}`;
+  const price = product.price?.toFixed(2);
+
+  return {
+    title: product.title,
+    description:
+      product.description ||
+      `Handgefertigtes Schmuckstück aus ${product.metal || "925 Silber"} mit ${
+        product.stone || "Naturstein"
+      }.`,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "product",
+      url,
+      title: product.title,
+      description:
+        product.description ||
+        `Feiner Steinschmuck – ${
+          product.stone || "Naturstein"
+        } in ${product.metal || "Silber"}.`,
+      siteName: "Steinschmuck Baumgartner Schweiz",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.title,
+      description:
+        product.description ||
+        `Handgefertigter Steinschmuck mit ${product.stone || "Naturstein"}.`,
+      images: [imageUrl],
+    },
+  };
+}
+
+/**
+ * Produktdetailseite (Server Component)
+ */
+export default async function ProductPage({ params }: PageParams) {
+  const product = await getProduct(params.slug);
 
   if (!product) {
     return (
-      <main className="mx-auto max-w-4xl px-4 py-10 space-y-4">
+      <main className="mx-auto max-w-4xl px  -4 py-10 space-y-4">
         <p className="text-sm text-neutral-700 dark:text-slate-200">
-          Produkt mit dem Slug{" "}
-          <code className="rounded bg-neutral-200 px-1 py-0.5 text-xs dark:bg-neutral-800">
-            {slugParam || "(leer)"}
-          </code>{" "}
-          wurde nicht gefunden.
+          Das gewünschte Schmuckstück wurde nicht gefunden oder ist nicht mehr
+          verfügbar.
         </p>
-
-        <p className="text-xs text-neutral-500 dark:text-slate-400">
-          Verfügbare Slugs laut Sanity:
-        </p>
-        <p className="break-words text-xs text-neutral-600 dark:text-slate-300">
-          {allSlugs.join(", ") || "Keine Produkte gefunden."}
-        </p>
-
         <Link
           href="/products"
           className="mt-4 inline-block text-sm text-[#C57A3B] hover:text-[#8B4F22] dark:text-amber-300"
@@ -108,10 +118,44 @@ export default function ProductPage() {
   }
 
   const images = product.images ?? [];
-  const mainImage = images[activeImageIndex] ?? images[0];
+  const mainImage = images[0] ?? null;
+
+  // JSON-LD für Schema.org Product
+  const imageUrl = mainImage ?? "https://beryll.ch/og-default.jpg";
+  const url = `https://beryll.ch/products/${product.slug}`;
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    image: [imageUrl],
+    description:
+      product.description ||
+      `Handgefertigter Steinschmuck aus ${product.metal || "925 Silber"} mit ${
+        product.stone || "Naturstein"
+      }.`,
+    brand: {
+      "@type": "Brand",
+      name: "Steinschmuck Baumgartner Schweiz",
+    },
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "CHF",
+      price: product.price,
+      availability: "https://schema.org/InStock",
+      url,
+    },
+    material: product.metal || "925 Silber",
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
+      {/* Structured Data für Google */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+
       <Link
         href="/products"
         className="mb-6 inline-flex items-center text-xs text-neutral-500 hover:text-[#C57A3B] dark:text-slate-400 dark:hover:text-amber-300"
@@ -128,36 +172,29 @@ export default function ProductPage() {
                 src={mainImage}
                 alt={product.title}
                 fill
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
               />
             )}
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-3">
-              {images.map((img, idx) => {
-                const isActive = idx === activeImageIndex;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`relative h-20 w-20 flex-none overflow-hidden rounded-xl border bg-neutral-200 dark:bg-neutral-900 ${
-                      isActive
-                        ? "border-[#C57A3B] shadow-lg shadow-black/40"
-                        : "border-transparent opacity-70 hover:opacity-100"
-                    }`}
-                    aria-label={`Bild ${idx + 1} auswählen`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.title} Detail ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                );
-              })}
+            <div className="flex gap-3" aria-label="Weitere Produktbilder">
+              {images.map((img, idx) => (
+                <div
+                  key={idx}
+                  className="relative h-20 w-20 flex-none overflow-hidden rounded-xl border border-transparent bg-neutral-200 opacity-80 shadow-sm hover:opacity-100 hover:border-[#C57A3B] dark:bg-neutral-900 dark:hover:border-amber-300"
+                >
+                  <Image
+                    src={img}
+                    alt={`${product.title} Detailansicht ${idx + 1}`}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -177,7 +214,7 @@ export default function ProductPage() {
               "Feiner Steinschmuck aus 925er Silber. Jedes Stück ist ein Unikat."}
           </p>
 
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-3" aria-label="Preisangabe">
             <span className="text-2xl font-semibold">
               {product.price.toFixed(2)} CHF
             </span>
@@ -211,8 +248,8 @@ export default function ProductPage() {
             <div>
               <dt className="inline font-semibold">Herkunft: </dt>
               <dd className="inline">
-                gefertigt in einer Manufaktur in Italien, importiert in die
-                Schweiz.
+                gefertigt in einer Manufaktur in Pakistan, importiert über
+                Italien in die Schweiz.
               </dd>
             </div>
           </dl>
@@ -222,7 +259,7 @@ export default function ProductPage() {
               id: product._id,
               title: product.title,
               price: product.price,
-              image: mainImage,
+              image: mainImage ?? undefined,
             }}
           />
 

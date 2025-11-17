@@ -6,20 +6,59 @@ import { SiteHeader } from "./components/layout/site-header";
 import { Footer } from "./components/layout/footer";
 
 export const metadata: Metadata = {
-  title: "Steinschmuck Baumgartner – Feiner Steinschmuck aus Silber",
+  metadataBase: new URL("https://beryll.ch"),
+  title: {
+    default: "Steinschmuck Baumgartner Schweiz – Handgefertigter Silberschmuck",
+    template: "%s | Steinschmuck Baumgartner Schweiz",
+  },
   description:
-    "Feiner Steinschmuck aus Silber mit echten Natursteinen – gefertigt in einer Manufaktur in Pakistan und in die Schweiz importiert.",
+    "Handgefertigter Steinschmuck aus 925 Silber und echten Natursteinen – gefertigt in Pakistan, importiert in die Schweiz. Ketten, Anhänger und Ringe in kleinen Stückzahlen.",
+  keywords: [
+    "Steinschmuck",
+    "Silberschmuck",
+    "925 Silber",
+    "Natursteine",
+    "Bernstein",
+    "Ketten",
+    "Anhänger",
+    "Ringe",
+    "Handgemachter Schmuck",
+    "Schweiz",
+  ],
   robots: {
-    index: false,
-    follow: false,
-    nocache: true,
+    index: true,       // 👉 Ab jetzt darf Google indexieren
+    follow: true,
     googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
-      noarchive: true,
-      nosnippet: true,
+      index: true,
+      follow: true,
     },
+  },
+  alternates: {
+    canonical: "https://beryll.ch",
+  },
+  openGraph: {
+    type: "website",
+    locale: "de_CH",
+    url: "https://beryll.ch",
+    siteName: "Steinschmuck Baumgartner Schweiz",
+    title: "Steinschmuck Baumgartner Schweiz – Handgefertigter Silberschmuck",
+    description:
+      "Zeitloser Steinschmuck aus 925 Silber mit Natursteinen – gefertigt in Pakistan, importiert in die Schweiz.",
+    images: [
+      {
+        url: "/og-default.jpg", // Lege dieses Bild in /public ab
+        width: 1200,
+        height: 630,
+        alt: "Eleganter Silberschmuck mit Natursteinen – Steinschmuck Baumgartner Schweiz",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Steinschmuck Baumgartner Schweiz – Handgefertigter Silberschmuck",
+    description:
+      "Handgefertigter Steinschmuck aus Pakistan, importiert in die Schweiz. Ketten, Anhänger und Ringe mit Natursteinen.",
+    images: ["/og-default.jpg"],
   },
 };
 
@@ -30,9 +69,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" suppressHydrationWarning>
-      {/* head kann hier leer bleiben – Next.js setzt Meta-Tags
-          basierend auf dem metadata-Objekt automatisch */}
-      <head />
       <body
         className="
           bg-[#F7F4EF] text-[#111827] antialiased
