@@ -2,7 +2,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { sanityClient } from "@/sanity/lib/client";
 import { productBySlugQuery } from "@/sanity/lib/queries";
@@ -11,10 +10,10 @@ import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
 type Product = {
   _id: string;
   title: string;
-  slug: string;
+  slug?: string;
   price: number;
   description?: string;
-  images?: string[];
+  images?: string[];           // kommt aus `"images": images[].asset->url`
   stone?: string;
   metal?: string;
   metalType?: "gold" | "silver" | null;
@@ -24,18 +23,34 @@ type Product = {
   category?: string | null;
 };
 
-async function getProduct(slug: string): Promise<Product | null> {
-  const product = await sanityClient.fetch<Product | null>(
+// ---- Helper: Produkt per Slug laden ----
+async function getProductBySlug(slug: string): Promise<Product | null> {
+  const result = await sanityClient.fetch<Product | null>(
     productBySlugQuery,
-    { slug }
+    { slug }                     // <- WICHTIG: param $slug wird hier gesetzt
   );
-  return product ?? null;
+
+  if (!result) return null;
+
+  const normalizedSlug =
+    typeof (result as any).slug === "string"
+      ? (result as any).slug
+      : (result as any).slug?.current ?? slug;
+
+  return { ...result, slug: normalizedSlug };
 }
 
-/* ---------- SEO / Open Graph ---------- */
-export async function generateMetadata({ params }: any): Promise<Metadata> {
-  const slug = params?.slug as string;
-  const product = await getProduct(slug);
+// ---- Typ für die neuen Next-16-Params (Promise!) ----
+type ProductPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+// ---- SEO / OpenGraph ----
+export async function generateMetadata(
+  props: ProductPageProps
+): Promise<Metadata> {
+  const { slug } = await props.params;          // params “auspacken”
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     return {
@@ -46,21 +61,19 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     };
   }
 
+  const url = `https://beryll.ch/products/${product.slug ?? slug}`;
   const imageUrl = product.images?.[0] ?? "/og-default.jpg";
-  const url = `https://beryll.ch/products/${product.slug}`;
 
   return {
     title: product.title,
     description:
       product.description ||
-      `Handgefertigtes Schmuckstück aus ${product.metal || "Silber"} mit ${
-        product.stone || "Naturstein"
-      }.`,
-    alternates: {
-      canonical: url,
-    },
+      `Handgefertigtes Schmuckstück aus ${
+        product.metal || "925 Silber"
+      } mit ${product.stone || "Naturstein"}.`,
+    alternates: { canonical: url },
     openGraph: {
-      // "product" mag der Next-Typ nicht, darum "website"
+      // "product" ist im Next-Metadata-Typ nicht erlaubt → "website" als Fallback
       type: "website",
       url,
       title: product.title,
@@ -84,21 +97,36 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
       title: product.title,
       description:
         product.description ||
-        `Handgefertigter Steinschmuck mit ${
-          product.stone || "Naturstein"
-        }.`,
+        `Handgefertigter Steinschmuck mit ${product.stone || "Naturstein"}.`,
       images: [imageUrl],
     },
   };
 }
 
-/* ---------- Produktseite ---------- */
-export default async function ProductPage({ params }: any) {
-  const slug = params?.slug as string;
-  const product = await getProduct(slug);
+// ---- Seite (Server Component) ----
+export default async function ProductPage(props: ProductPageProps) {
+  const { slug } = await props.params;          // params hier ebenfalls “awaiten”
+  const product = await getProductBySlug(slug);
 
   if (!product) {
-    notFound();
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-10 space-y-4">
+        <p className="text-sm text-neutral-700 dark:text-slate-200">
+          Produkt mit dem Slug{" "}
+          <code className="rounded bg-neutral-200 px-1 py-0.5 text-xs dark:bg-neutral-800">
+            {slug || "(leer)"}
+          </code>{" "}
+          wurde nicht gefunden.
+        </p>
+
+        <Link
+          href="/products"
+          className="mt-4 inline-block text-sm text-[#C57A3B] hover:text-[#8B4F22] dark:text-amber-300"
+        >
+          ← Zurück zum Shop
+        </Link>
+      </main>
+    );
   }
 
   const images = product.images ?? [];
@@ -114,7 +142,7 @@ export default async function ProductPage({ params }: any) {
       </Link>
 
       <div className="grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:items-start">
-        {/* Galerie links */}
+        {/* Bilder */}
         <div className="space-y-4">
           <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-neutral-200 shadow-xl shadow-black/30 dark:bg-neutral-900">
             {mainImage && (
@@ -129,21 +157,17 @@ export default async function ProductPage({ params }: any) {
           </div>
 
           {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-1">
               {images.map((img, idx) => (
                 <div
                   key={idx}
-                  className={`relative h-20 w-full overflow-hidden rounded-xl border bg-neutral-200 dark:bg-neutral-900 ${
-                    idx === 0
-                      ? "border-[#C57A3B] shadow-lg shadow-black/40"
-                      : "border-transparent opacity-80"
-                  }`}
+                  className="relative h-20 w-20 flex-none overflow-hidden rounded-xl border border-transparent bg-neutral-200 hover:border-[#C57A3B] dark:bg-neutral-900"
                 >
                   <Image
                     src={img}
                     alt={`${product.title} Detail ${idx + 1}`}
                     fill
-                    sizes="(min-width: 1024px) 12vw, 25vw"
+                    sizes="80px"
                     className="object-cover"
                   />
                 </div>
@@ -152,7 +176,7 @@ export default async function ProductPage({ params }: any) {
           )}
         </div>
 
-        {/* Infos rechts */}
+        {/* Produktinfos */}
         <div className="space-y-6 rounded-3xl bg-[#F7F4EF] p-6 text-neutral-900 shadow-xl shadow-black/10 ring-1 ring-black/5 dark:bg-[#020617] dark:text-slate-50 dark:ring-slate-700 dark:shadow-black/50 md:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#8B4F22] dark:text-amber-300">
             Handgefertigter Steinschmuck
@@ -164,7 +188,7 @@ export default async function ProductPage({ params }: any) {
 
           <p className="text-sm leading-relaxed text-neutral-700 dark:text-slate-200">
             {product.description ??
-              "Feiner Steinschmuck aus edlen Metallen und Natursteinen. Jedes Stück ist ein Unikat."}
+              "Feiner Steinschmuck aus 925er Silber. Jedes Stück ist ein Unikat."}
           </p>
 
           <div className="flex items-baseline gap-3">
@@ -201,8 +225,8 @@ export default async function ProductPage({ params }: any) {
             <div>
               <dt className="inline font-semibold">Herkunft: </dt>
               <dd className="inline">
-                gefertigt in einer Manufaktur in Pakistan und über Italien in
-                die Schweiz importiert.
+                handgefertigt in einer Manufaktur in Pakistan, importiert in die
+                Schweiz über Italien.
               </dd>
             </div>
           </dl>
@@ -217,7 +241,7 @@ export default async function ProductPage({ params }: any) {
           />
 
           <p className="text-[11px] text-neutral-500 dark:text-slate-400">
-            Handgefertigt in kleinen Stückzahlen. Farben und Maserung der Steine
+            Handarbeit in kleinen Stückzahlen. Farben und Maserung der Steine
             können leicht variieren.
           </p>
         </div>
