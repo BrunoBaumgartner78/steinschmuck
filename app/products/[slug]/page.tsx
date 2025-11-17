@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import { sanityClient } from "@/sanity/lib/client";
 import { productBySlugQuery } from "@/sanity/lib/queries";
 import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
@@ -9,37 +11,31 @@ import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
 type Product = {
   _id: string;
   title: string;
-  slug: string; // wir projizieren slug.current → slug in der GROQ-Query
+  slug: string;
   price: number;
   description?: string;
-  images?: string[]; // in der Query: "images": images[].asset->url
+  images?: string[];
   stone?: string;
   metal?: string;
   metalType?: "gold" | "silver" | null;
   goldKarat?: string | null;
   silverFineness?: string | null;
   colorTheme?: string | null;
+  category?: string | null;
 };
 
-type PageParams = {
-  params: { slug: string };
-};
-
-// Produkt aus Sanity holen
 async function getProduct(slug: string): Promise<Product | null> {
-  const product = await sanityClient.fetch<Product | null>(productBySlugQuery, {
-    slug,
-  });
+  const product = await sanityClient.fetch<Product | null>(
+    productBySlugQuery,
+    { slug }
+  );
   return product ?? null;
 }
 
-/**
- * SEO / OG / Twitter pro Produkt
- */
-export async function generateMetadata(
-  { params }: PageParams
-): Promise<Metadata> {
-  const product = await getProduct(params.slug);
+/* ---------- SEO / Open Graph ---------- */
+export async function generateMetadata({ params }: any): Promise<Metadata> {
+  const slug = params?.slug as string;
+  const product = await getProduct(slug);
 
   if (!product) {
     return {
@@ -52,27 +48,27 @@ export async function generateMetadata(
 
   const imageUrl = product.images?.[0] ?? "/og-default.jpg";
   const url = `https://beryll.ch/products/${product.slug}`;
-  const price = product.price?.toFixed(2);
 
   return {
     title: product.title,
     description:
       product.description ||
-      `Handgefertigtes Schmuckstück aus ${product.metal || "925 Silber"} mit ${
+      `Handgefertigtes Schmuckstück aus ${product.metal || "Silber"} mit ${
         product.stone || "Naturstein"
       }.`,
     alternates: {
       canonical: url,
     },
     openGraph: {
-      type: "product",
+      // "product" mag der Next-Typ nicht, darum "website"
+      type: "website",
       url,
       title: product.title,
       description:
         product.description ||
-        `Feiner Steinschmuck – ${
-          product.stone || "Naturstein"
-        } in ${product.metal || "Silber"}.`,
+        `Feiner Steinschmuck – ${product.stone || "Naturstein"} in ${
+          product.metal || "Silber"
+        }.`,
       siteName: "Steinschmuck Baumgartner Schweiz",
       images: [
         {
@@ -88,74 +84,28 @@ export async function generateMetadata(
       title: product.title,
       description:
         product.description ||
-        `Handgefertigter Steinschmuck mit ${product.stone || "Naturstein"}.`,
+        `Handgefertigter Steinschmuck mit ${
+          product.stone || "Naturstein"
+        }.`,
       images: [imageUrl],
     },
   };
 }
 
-/**
- * Produktdetailseite (Server Component)
- */
-export default async function ProductPage({ params }: PageParams) {
-  const product = await getProduct(params.slug);
+/* ---------- Produktseite ---------- */
+export default async function ProductPage({ params }: any) {
+  const slug = params?.slug as string;
+  const product = await getProduct(slug);
 
   if (!product) {
-    return (
-      <main className="mx-auto max-w-4xl px  -4 py-10 space-y-4">
-        <p className="text-sm text-neutral-700 dark:text-slate-200">
-          Das gewünschte Schmuckstück wurde nicht gefunden oder ist nicht mehr
-          verfügbar.
-        </p>
-        <Link
-          href="/products"
-          className="mt-4 inline-block text-sm text-[#C57A3B] hover:text-[#8B4F22] dark:text-amber-300"
-        >
-          ← Zurück zum Shop
-        </Link>
-      </main>
-    );
+    notFound();
   }
 
   const images = product.images ?? [];
-  const mainImage = images[0] ?? null;
-
-  // JSON-LD für Schema.org Product
-  const imageUrl = mainImage ?? "https://beryll.ch/og-default.jpg";
-  const url = `https://beryll.ch/products/${product.slug}`;
-  const productJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.title,
-    image: [imageUrl],
-    description:
-      product.description ||
-      `Handgefertigter Steinschmuck aus ${product.metal || "925 Silber"} mit ${
-        product.stone || "Naturstein"
-      }.`,
-    brand: {
-      "@type": "Brand",
-      name: "Steinschmuck Baumgartner Schweiz",
-    },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "CHF",
-      price: product.price,
-      availability: "https://schema.org/InStock",
-      url,
-    },
-    material: product.metal || "925 Silber",
-  };
+  const mainImage = images[0];
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      {/* Structured Data für Google */}
-      <script
-        type="application/ld+json"
-        suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-      />
-
       <Link
         href="/products"
         className="mb-6 inline-flex items-center text-xs text-neutral-500 hover:text-[#C57A3B] dark:text-slate-400 dark:hover:text-amber-300"
@@ -172,7 +122,6 @@ export default async function ProductPage({ params }: PageParams) {
                 src={mainImage}
                 alt={product.title}
                 fill
-                priority
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-cover"
               />
@@ -180,17 +129,21 @@ export default async function ProductPage({ params }: PageParams) {
           </div>
 
           {images.length > 1 && (
-            <div className="flex gap-3" aria-label="Weitere Produktbilder">
+            <div className="grid grid-cols-4 gap-3">
               {images.map((img, idx) => (
                 <div
                   key={idx}
-                  className="relative h-20 w-20 flex-none overflow-hidden rounded-xl border border-transparent bg-neutral-200 opacity-80 shadow-sm hover:opacity-100 hover:border-[#C57A3B] dark:bg-neutral-900 dark:hover:border-amber-300"
+                  className={`relative h-20 w-full overflow-hidden rounded-xl border bg-neutral-200 dark:bg-neutral-900 ${
+                    idx === 0
+                      ? "border-[#C57A3B] shadow-lg shadow-black/40"
+                      : "border-transparent opacity-80"
+                  }`}
                 >
                   <Image
                     src={img}
-                    alt={`${product.title} Detailansicht ${idx + 1}`}
+                    alt={`${product.title} Detail ${idx + 1}`}
                     fill
-                    sizes="80px"
+                    sizes="(min-width: 1024px) 12vw, 25vw"
                     className="object-cover"
                   />
                 </div>
@@ -199,7 +152,7 @@ export default async function ProductPage({ params }: PageParams) {
           )}
         </div>
 
-        {/* Infos rechts – neutrale Karte */}
+        {/* Infos rechts */}
         <div className="space-y-6 rounded-3xl bg-[#F7F4EF] p-6 text-neutral-900 shadow-xl shadow-black/10 ring-1 ring-black/5 dark:bg-[#020617] dark:text-slate-50 dark:ring-slate-700 dark:shadow-black/50 md:p-8">
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#8B4F22] dark:text-amber-300">
             Handgefertigter Steinschmuck
@@ -211,10 +164,10 @@ export default async function ProductPage({ params }: PageParams) {
 
           <p className="text-sm leading-relaxed text-neutral-700 dark:text-slate-200">
             {product.description ??
-              "Feiner Steinschmuck aus 925er Silber. Jedes Stück ist ein Unikat."}
+              "Feiner Steinschmuck aus edlen Metallen und Natursteinen. Jedes Stück ist ein Unikat."}
           </p>
 
-          <div className="flex items-baseline gap-3" aria-label="Preisangabe">
+          <div className="flex items-baseline gap-3">
             <span className="text-2xl font-semibold">
               {product.price.toFixed(2)} CHF
             </span>
@@ -248,8 +201,8 @@ export default async function ProductPage({ params }: PageParams) {
             <div>
               <dt className="inline font-semibold">Herkunft: </dt>
               <dd className="inline">
-                gefertigt in einer Manufaktur in Pakistan, importiert über
-                Italien in die Schweiz.
+                gefertigt in einer Manufaktur in Pakistan und über Italien in
+                die Schweiz importiert.
               </dd>
             </div>
           </dl>
@@ -259,7 +212,7 @@ export default async function ProductPage({ params }: PageParams) {
               id: product._id,
               title: product.title,
               price: product.price,
-              image: mainImage ?? undefined,
+              image: mainImage,
             }}
           />
 

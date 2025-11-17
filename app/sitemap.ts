@@ -3,41 +3,50 @@ import type { MetadataRoute } from "next";
 import { sanityClient } from "@/sanity/lib/client";
 import { allProductSlugsQuery } from "@/sanity/lib/queries";
 
-type ProductSlug = { slug: { current: string } };
+const BASE_URL = "https://beryll.ch";
+
+type ProductSlugResult = {
+  slug: string;
+};
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://beryll.ch";
+  let productEntries: MetadataRoute.Sitemap = [];
 
-  let productSlugs: ProductSlug[] = [];
   try {
-    productSlugs = await sanityClient.fetch<ProductSlug[]>(allProductSlugsQuery);
-  } catch {
-    productSlugs = [];
+    const slugs = await sanityClient.fetch<ProductSlugResult[]>(
+      allProductSlugsQuery
+    );
+
+    productEntries = slugs
+      .filter((p) => p.slug)
+      .map((p) => ({
+        url: `${BASE_URL}/products/${p.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.7,
+      }));
+  } catch (error) {
+    console.error("Fehler beim Laden der Produkt-Slugs für die Sitemap:", error);
   }
 
-  const staticPages: MetadataRoute.Sitemap = [
+  const staticPaths: string[] = [
     "",
     "/products",
-    "/about-jewelry",
     "/about",
+    "/about-jewelry",
     "/kontakt",
     "/agb",
     "/datenschutz",
     "/impressum",
     "/widerruf",
-  ].map((path) => ({
-    url: `${baseUrl}${path}`,
+  ];
+
+  const staticEntries: MetadataRoute.Sitemap = staticPaths.map((path) => ({
+    url: `${BASE_URL}${path}`,
     lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: path === "" ? 1 : 0.6,
+    changeFrequency: "monthly" as const,
+    priority: path === "" ? 1 : 0.5,
   }));
 
-  const productPages: MetadataRoute.Sitemap = productSlugs.map((p) => ({
-    url: `${baseUrl}/products/${p.slug.current}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
-
-  return [...staticPages, ...productPages];
+  return [...staticEntries, ...productEntries];
 }

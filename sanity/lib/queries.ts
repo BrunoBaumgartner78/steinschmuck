@@ -63,3 +63,12 @@ export const productBySlugQuery = groq`
   category,
 }
 `;
+
+/**
+ * Nur Slugs aller Produkte (für sitemap.xml)
+ */
+export const allProductSlugsQuery = groq`
+*[_type == "product" && defined(slug.current)]{
+  "slug": slug.current
+}
+`;

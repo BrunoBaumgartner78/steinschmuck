@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     "Schweiz",
   ],
   robots: {
-    index: true,       // 👉 Ab jetzt darf Google indexieren
+    index: false,       // 👉 Ab jetzt darf Google indexieren
     follow: true,
     googleBot: {
-      index: true,
+      index: false,
       follow: true,
     },
   },
