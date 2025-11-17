@@ -6,8 +6,21 @@ import { SiteHeader } from "./components/layout/site-header";
 import { Footer } from "./components/layout/footer";
 
 export const metadata: Metadata = {
-  title: "Steinschmuck",
-  description: "Feiner Steinschmuck aus Silber",
+  title: "Steinschmuck Baumgartner – Feiner Steinschmuck aus Silber",
+  description:
+    "Feiner Steinschmuck aus Silber mit echten Natursteinen – gefertigt in einer Manufaktur in Pakistan und in die Schweiz importiert.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      noarchive: true,
+      nosnippet: true,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -17,6 +30,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" suppressHydrationWarning>
+      {/* head kann hier leer bleiben – Next.js setzt Meta-Tags
+          basierend auf dem metadata-Objekt automatisch */}
+      <head />
       <body
         className="
           bg-[#F7F4EF] text-[#111827] antialiased

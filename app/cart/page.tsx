@@ -128,9 +128,7 @@ export default function CartPage() {
               Warenkorb leeren
             </button>
 
-            <p className="mt-1 text-[11px] text-neutral-400 dark:text-slate-500">
-              Sicherer Checkout folgt später über Stripe.
-            </p>
+           
           </aside>
         </div>
       )}
