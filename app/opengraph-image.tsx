@@ -1,16 +1,17 @@
-// app/opengraph-image/route.ts
+// app/opengraph-image.tsx
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
-
+// Größe für OG-Image
 export const size = {
   width: 1200,
   height: 630,
 };
 
+// MIME-Typ
 export const contentType = "image/png";
 
-export default function GET() {
+// Default-Export ist die "Component" für das OG-Image
+export default function OpengraphImage() {
   return new ImageResponse(
     (
       <div
@@ -18,13 +19,16 @@ export default function GET() {
           display: "flex",
           width: "100%",
           height: "100%",
-          background: "linear-gradient(135deg, #C57A3B 0%, #FBBF77 100%)",
+          background:
+            "linear-gradient(135deg, #C57A3B 0%, #FBBF77 35%, #111827 100%)",
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "column",
           color: "white",
           fontSize: 60,
           fontWeight: 600,
+          fontFamily:
+            "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
         }}
       >
         <div
@@ -32,6 +36,7 @@ export default function GET() {
             display: "flex",
             fontSize: 60,
             marginBottom: 20,
+            textShadow: "0 8px 30px rgba(0,0,0,0.45)",
           }}
         >
           Steinschmuck Baumgartner
@@ -40,14 +45,18 @@ export default function GET() {
         <div
           style={{
             display: "flex",
-            fontSize: 32,
+            fontSize: 30,
             opacity: 0.9,
+            textShadow: "0 4px 20px rgba(0,0,0,0.35)",
           }}
         >
-          Handgefertigter Schmuck aus der Schweiz
+          Handgefertigter Steinschmuck aus der Schweiz
         </div>
       </div>
     ),
-    size
+    {
+      width: size.width,
+      height: size.height,
+    }
   );
 }
