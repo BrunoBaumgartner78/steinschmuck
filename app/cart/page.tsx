@@ -111,12 +111,13 @@ export default function CartPage() {
             </p>
 
             {/* Zur Kasse */}
-            <button
-              type="button"
-              className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[#4B5563] px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/25 transition hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FBBF77] dark:bg-[#FBBF77] dark:text-[#1F2933] dark:hover:bg-[#F59E0B]"
-            >
-              Zur Kasse (Stripe kommt noch)
-            </button>
+           <Link
+  href="/checkout"
+  className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[#4B5563] px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/25 transition hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FBBF77] dark:bg-[#FBBF77] dark:text-[#1F2933] dark:hover:bg-[#F59E0B]"
+>
+  Zur Kasse
+</Link>
+
 
             {/* Warenkorb leeren */}
             <button

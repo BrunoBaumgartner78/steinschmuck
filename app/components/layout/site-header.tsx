@@ -26,9 +26,9 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#C57A3B] to-[#FBBF77] shadow-md shadow-black/40" />
+<span className="flex h-7 w-7 items-center justify-center rounded-full shadow-md shadow-black/40 gradient-orb" />
           <span className="text-xs font-semibold tracking-[0.3em] uppercase text-neutral-100">
-            Beryll
+            Beryll.ch
           </span>
         </Link>
 

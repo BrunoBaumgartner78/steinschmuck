@@ -115,3 +115,21 @@ html::-webkit-scrollbar-thumb:hover {
   }
 }
 
+/* Animierter Gradient-Kreis im Header */
+.gradient-orb {
+  background-image: linear-gradient(135deg, #C57A3B, #FBBF77, #C0572A);
+  background-size: 200% 200%;
+  animation: gradient-orb-diagonal 7s ease-in-out infinite;
+}
+
+@keyframes gradient-orb-diagonal {
+  0% {
+    background-position: 0% 0%;      /* links oben */
+  }
+  50% {
+    background-position: 100% 100%;  /* rechts unten */
+  }
+  100% {
+    background-position: 0% 0%;      /* zurück nach links oben */
+  }
+}

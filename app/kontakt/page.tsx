@@ -59,7 +59,7 @@ export default function ContactPage() {
           <address className="not-italic space-y-2 text-sm text-neutral-800 dark:text-slate-200">
             <p className="font-semibold">Steinschmuck Baumgartner</p>
             <p>Le pré-aux-Boufes 222</p>
-            <p>32615 Sonvilier</p>
+            <p>2615 Sonvilier</p>
             <p>Schweiz</p>
           </address>
 
