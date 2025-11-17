@@ -91,7 +91,7 @@ export default function AboutUsPage() {
         </h2>
         <p className="max-w-3xl text-sm leading-relaxed text-neutral-800 dark:text-neutral-200">
           Die Schmuckstücke entstehen in einer Manufaktur in Pakistan. Dort
-          werden die Steine ausgewählt, gefasst und vorbereitet.Anschließend in die Schweiz importiert, wo
+          werden die Steine ausgewählt, gefasst und vorbereitet. Anschließend wird in die Schweiz importiert, wo
           Lagerung, finale Kontrolle und Versand stattfinden.
         </p>
         <p className="max-w-3xl text-sm leading-relaxed text-neutral-800 dark:text-neutral-200">
