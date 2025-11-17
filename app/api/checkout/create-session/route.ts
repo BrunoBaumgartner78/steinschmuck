@@ -13,9 +13,10 @@ if (!stripeSecretKey) {
 
 const stripe = stripeSecretKey
   ? new Stripe(stripeSecretKey, {
-      apiVersion: "2024-06-20",
+      apiVersion: "2024-06-20" as any, // TS meckert dann nicht mehr
     })
   : null;
+
 
 type CheckoutItem = {
   id: string;

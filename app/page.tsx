@@ -164,11 +164,11 @@ export default async function Home() {
           <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-50 sm:text-4xl">
             Feiner Steinschmuck aus Pakistan,
             <br />
-            über Italien in die Schweiz.
+            in die Schweiz.
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-neutral-800 dark:text-neutral-200">
             Handverlesene Steine aus einer Manufaktur in Pakistan, in sorgfältiger
-            Handarbeit zu feinem Schmuck verarbeitet und über Italien in die Schweiz
+            Handarbeit zu feinem Schmuck verarbeitet und in die Schweiz
             importiert. Jedes Stück ist ein Unikat – ruhig, zeitlos und nah an der Natur.
           </p>
 

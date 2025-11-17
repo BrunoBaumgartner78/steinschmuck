@@ -25,7 +25,7 @@ export default function AboutPage() {
           <p className="max-w-xl text-sm leading-relaxed text-neutral-800 dark:text-neutral-200">
             Unsere Stücke entstehen in einer kleinen Manufaktur in Pakistan.
             Dort werden Steine sorgfältig ausgewählt, geschliffen und in ruhige,
-            klare Formen gebracht. Der Schmuck wird anschließend über Italien in
+            klare Formen gebracht. Der Schmuck wird anschließend in
             die Schweiz importiert, geprüft und von hier aus versendet.
           </p>
           <p className="max-w-xl text-sm leading-relaxed text-neutral-800 dark:text-neutral-200">
@@ -77,17 +77,7 @@ export default function AboutPage() {
         </div>
         <div className="space-y-2">
           <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
-            2 · Logistik über Italien 🇮🇹
-          </h2>
-          <p className="leading-relaxed text-neutral-800 dark:text-slate-200">
-            Über einen Partner in Italien gelangt der Schmuck in die EU. Dort
-            werden die Sendungen gebündelt, zolltechnisch verarbeitet und für
-            den Weitertransport vorbereitet.
-          </p>
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-50">
-            3 · Versand aus der Schweiz 🇨🇭
+            2 · Versand aus der Schweiz 🇨🇭
           </h2>
           <p className="leading-relaxed text-neutral-800 dark:text-slate-200">
             In der Schweiz erfolgt die finale Prüfung, Lagerung und der Versand.
@@ -95,6 +85,7 @@ export default function AboutPage() {
             sicherstellen.
           </p>
         </div>
+        
       </section>
 
       {/* Materialien & Farbwelten */}
