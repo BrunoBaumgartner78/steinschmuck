@@ -266,7 +266,7 @@ export default function CheckoutPage() {
             disabled={isSubmitting || !hasItems}
             className="inline-flex items-center justify-center rounded-full bg-[#4B5563] px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/25 transition hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FBBF77] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#FBBF77] dark:text-[#1F2933] dark:hover:bg-[#F59E0B]"
           >
-            {isSubmitting ? "Wird gesendet …" : "Zur Zahlung (Testabschluss)"}
+            {isSubmitting ? "Wird gesendet …" : "Zur Zahlung"}
           </button>
 
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
