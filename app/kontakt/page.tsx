@@ -58,7 +58,7 @@ export default function ContactPage() {
 
           <address className="not-italic space-y-2 text-sm text-neutral-800 dark:text-slate-200">
             <p className="font-semibold">Steinschmuck Baumgartner</p>
-            <p>Le pré-aux-Boufes 222</p>
+            <p>Le pré-aux-Boeufs 222</p>
             <p>2615 Sonvilier</p>
             <p>Schweiz</p>
           </address>
@@ -76,10 +76,10 @@ export default function ContactPage() {
             <p>
               <span className="font-semibold">E-Mail:</span>{" "}
               <a
-                href="mailto:bruno@brainbloom.ch"
+                href="mailto:bruno.baumgartner@beryll.ch"
                 className="underline underline-offset-2 hover:text-[#8B4F22] dark:hover:text-amber-300"
               >
-                bruno@brainbloom.ch
+                bruno.baumgartner@beryll.ch
               </a>
             </p>
           </div>

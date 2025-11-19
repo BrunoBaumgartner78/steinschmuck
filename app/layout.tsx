@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { SiteHeader } from "./components/layout/site-header";
 import { Footer } from "./components/layout/footer";
+import { CookieBanner } from "./components/layout/CookieBanner";
+import { Analytics } from "./components/layout/analythics";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://beryll.ch"),
@@ -79,6 +81,8 @@ export default function RootLayout({
           <SiteHeader />
           {children}
           <Footer />
+          <CookieBanner />
+          <Analytics />
         </Providers>
       </body>
     </html>

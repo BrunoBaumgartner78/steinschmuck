@@ -31,7 +31,7 @@ export default function ImpressumPage() {
           <br />
           Sonvilier, Schweiz  
           <br />
-          E-Mail: bruno@brainbloom.ch
+          E-Mail: bruno.baumgartner@beryll.ch
           <br />
           Telefon: +41 (0) 78 243 72 27
         </p>

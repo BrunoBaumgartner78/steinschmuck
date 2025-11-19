@@ -35,7 +35,7 @@ export default function DatenschutzPage() {
           <br />
           Sonvilier, Schweiz  
           <br />
-          E-Mail: bruno@brainbloom.ch
+          E-Mail: bruno.baumgartner@beryll.ch
         </p>
       </section>
 
