@@ -1,7 +1,7 @@
 // sanity/schemaTypes/product.ts
 import { defineField, defineType } from "sanity";
 
-export const product = defineType({
+export default defineType({
   name: "product",
   title: "Produkt",
   type: "document",
@@ -10,9 +10,8 @@ export const product = defineType({
       name: "title",
       title: "Titel",
       type: "string",
-      validation: (Rule) => Rule.required().error("Bitte einen Produkttitel eingeben."),
+      validation: (Rule) => Rule.required(),
     }),
-
     defineField({
       name: "slug",
       title: "Slug",
@@ -21,32 +20,96 @@ export const product = defineType({
         source: "title",
         maxLength: 96,
       },
-      validation: (Rule) =>
-        Rule.required().error("Bitte einen Slug generieren (z.B. aus dem Titel)."),
+      validation: (Rule) => Rule.required(),
     }),
-
     defineField({
       name: "price",
       title: "Preis (CHF)",
       type: "number",
-      validation: (Rule) =>
-        Rule.required()
-          .min(0)
-          .precision(2)
-          .error("Bitte einen gültigen Preis angeben."),
+      validation: (Rule) => Rule.min(0),
     }),
-
     defineField({
       name: "images",
       title: "Bilder",
       type: "array",
-      of: [
-        {
-          type: "image",
-          options: { hotspot: true },
-        },
-      ],
-      validation: (Rule) => Rule.min(1).error("Mindestens ein Bild hochladen."),
+      of: [{ type: "image" }],
+    }),
+    defineField({
+      name: "stone",
+      title: "Stein",
+      type: "string",
+    }),
+    defineField({
+      name: "metal",
+      title: "Metall (Text)",
+      type: "string",
+      description: "z.B. '925 Silber', 'Vergoldet' – frei eintragbar.",
+    }),
+    defineField({
+      name: "metalType",
+      title: "Metall-Typ",
+      type: "string",
+      options: {
+        list: [
+          { title: "Silber", value: "silver" },
+          { title: "Gold", value: "gold" },
+        ],
+        layout: "radio",
+      },
+    }),
+    defineField({
+      name: "goldKarat",
+      title: "Gold Karat",
+      type: "string",
+      hidden: ({ parent }) => parent?.metalType !== "gold",
+    }),
+    defineField({
+      name: "silverFineness",
+      title: "Silber-Feingehalt",
+      type: "string",
+      hidden: ({ parent }) => parent?.metalType !== "silver",
+    }),
+
+    // 🔸 Farbwelt jetzt als Radio-Buttons mit festen Werten
+    defineField({
+      name: "colorTheme",
+      title: "Farbwelt",
+      type: "string",
+      description: "Wird für die Farb-Filter im Shop verwendet.",
+      options: {
+        list: [
+          { title: "Bernstein / Warm", value: "amber" },
+          { title: "Blau", value: "blue" },
+          { title: "Grün", value: "green" },
+          { title: "Perlmutt / Hell", value: "pearl" },
+          { title: "Rot", value: "red" },
+          { title: "Türkis", value: "turquoise" },
+          { title: "Diamant / Klar", value: "diamond" },
+          { title: "Schwarz", value: "black" },
+          { title: "Violett", value: "violet" },
+        ],
+        layout: "radio", // ⬅ hier kommen die Radio-Buttons her
+      },
+    }),
+
+    // Kategorien
+    defineField({
+      name: "category",
+      title: "Kategorie",
+      type: "string",
+      options: {
+        list: [
+          { title: "Kette", value: "kette" },
+          { title: "Anhänger", value: "anhänger" },
+          { title: "Ring", value: "ring" },
+          { title: "Ohrring", value: "ohrring" },
+          { title: "Bracelet", value: "bracelet" },
+          { title: "Kombination", value: "kombination" },
+        ],
+        layout: "radio",
+      },
+      validation: (Rule) =>
+        Rule.required().error("Bitte eine Kategorie wählen."),
     }),
 
     defineField({
@@ -55,115 +118,5 @@ export const product = defineType({
       type: "text",
       rows: 4,
     }),
-
-    defineField({
-      name: "stone",
-      title: "Stein",
-      type: "string",
-    }),
-
-    // 🌟 Metall: Gold / Silber
-    defineField({
-      name: "metalType",
-      title: "Metall",
-      type: "string",
-      options: {
-        list: [
-          { title: "Silber", value: "silver" },
-          { title: "Gold", value: "gold" },
-        ],
-        layout: "radio",
-        direction: "horizontal",
-      },
-    }),
-
-    defineField({
-      name: "goldKarat",
-      title: "Gold (Karat)",
-      type: "string",
-      description: "z. B. 18K, 14K …",
-      hidden: ({ parent }) => parent?.metalType !== "gold",
-    }),
-
-    defineField({
-      name: "silverFineness",
-      title: "Silber-Feinheit",
-      type: "string",
-      description: "z. B. 925, 950 …",
-      hidden: ({ parent }) => parent?.metalType !== "silver",
-    }),
-
-    // 🎨 Farbwelt
-    defineField({
-      name: "colorTheme",
-      title: "Farbwelt",
-      type: "string",
-      options: {
-        list: [
-          { title: "Bernstein", value: "amber" },
-          { title: "Blau", value: "blue" },
-          { title: "Grün", value: "green" },
-          { title: "Perlmutt", value: "pearl" },
-          { title: "Rot", value: "red" },
-          { title: "Türkis", value: "turquoise" },
-          { title: "Diamant / Klar", value: "diamond" },
-          { title: "Schwarz", value: "black" },
-          { title: "Violett", value: "violet" },
-        ],
-        layout: "dropdown",
-      },
-    }),
-
-    // 🧵 NEU: Kategorie – Kette / Anhänger / Ring
-    defineField({
-      name: "category",
-      title: "Kategorie",
-      type: "string",
-      options: {
-        list: [
-          { title: "Kette", value: "necklace" },
-          { title: "Anhänger", value: "pendant" },
-          { title: "Ring", value: "ring" },
-        ],
-        layout: "radio",
-        direction: "horizontal",
-      },
-      validation: (Rule) =>
-        Rule.required().error("Bitte eine Kategorie (Kette, Anhänger, Ring) wählen."),
-    }),
   ],
-
-  preview: {
-    select: {
-      title: "title",
-      subtitle: "stone",
-      media: "images.0",
-      metalType: "metalType",
-      category: "category",
-    },
-    prepare({ title, subtitle, media, metalType, category }) {
-      const metal =
-        metalType === "gold"
-          ? "Gold"
-          : metalType === "silver"
-          ? "Silber"
-          : undefined;
-
-      const cat =
-        category === "necklace"
-          ? "Kette"
-          : category === "pendant"
-          ? "Anhänger"
-          : category === "ring"
-          ? "Ring"
-          : undefined;
-
-      const parts = [subtitle, metal, cat].filter(Boolean);
-      return {
-        title: title || "Unbenanntes Produkt",
-        subtitle: parts.join(" · "),
-        media,
-      };
-    },
-  },
 });

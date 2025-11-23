@@ -7,28 +7,27 @@ import { sanityClient } from "@/sanity/lib/client";
 import { productBySlugQuery } from "@/sanity/lib/queries";
 import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
 
-type Product = {
+export type Product = {
   _id: string;
   title: string;
   slug?: string;
   price: number;
   description?: string;
-  images?: string[];           // kommt aus `"images": images[].asset->url`
+  images?: string[]; // kommt aus `"images": images[].asset->url`
   stone?: string;
   metal?: string;
   metalType?: "gold" | "silver" | null;
   goldKarat?: string | null;
   silverFineness?: string | null;
   colorTheme?: string | null;
-  category?: string | null;
+  category?: string | null; // z.B. "ring", "ohrring", "bracelet", "kombination"
 };
 
 // ---- Helper: Produkt per Slug laden ----
 async function getProductBySlug(slug: string): Promise<Product | null> {
-  const result = await sanityClient.fetch<Product | null>(
-    productBySlugQuery,
-    { slug }                     // <- WICHTIG: param $slug wird hier gesetzt
-  );
+  const result = await sanityClient.fetch<Product | null>(productBySlugQuery, {
+    slug, // ← WICHTIG: param $slug wird hier gesetzt
+  });
 
   if (!result) return null;
 
@@ -49,7 +48,7 @@ type ProductPageProps = {
 export async function generateMetadata(
   props: ProductPageProps
 ): Promise<Metadata> {
-  const { slug } = await props.params;          // params “auspacken”
+  const { slug } = await props.params;
   const product = await getProductBySlug(slug);
 
   if (!product) {
@@ -73,8 +72,7 @@ export async function generateMetadata(
       } mit ${product.stone || "Naturstein"}.`,
     alternates: { canonical: url },
     openGraph: {
-      // "product" ist im Next-Metadata-Typ nicht erlaubt → "website" als Fallback
-      type: "website",
+      type: "website", // "product" ist im Next-Metadata-Typ nicht vorgesehen
       url,
       title: product.title,
       description:
@@ -105,7 +103,7 @@ export async function generateMetadata(
 
 // ---- Seite (Server Component) ----
 export default async function ProductPage(props: ProductPageProps) {
-  const { slug } = await props.params;          // params hier ebenfalls “awaiten”
+  const { slug } = await props.params;
   const product = await getProductBySlug(slug);
 
   if (!product) {
@@ -186,6 +184,12 @@ export default async function ProductPage(props: ProductPageProps) {
             {product.title}
           </h1>
 
+          {product.category && (
+            <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 dark:text-slate-400">
+              Kategorie: {product.category}
+            </p>
+          )}
+
           <p className="text-sm leading-relaxed text-neutral-700 dark:text-slate-200">
             {product.description ??
               "Feiner Steinschmuck aus 925er Silber. Jedes Stück ist ein Unikat."}
@@ -231,12 +235,14 @@ export default async function ProductPage(props: ProductPageProps) {
             </div>
           </dl>
 
+          {/* Add to Cart – Kategorie & Ringgrössen kann der Button nutzen */}
           <AddToCartButton
             product={{
               id: product._id,
               title: product.title,
               price: product.price,
               image: mainImage,
+              category: product.category ?? undefined,
             }}
           />
 

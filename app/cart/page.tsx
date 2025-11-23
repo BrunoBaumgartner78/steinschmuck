@@ -1,4 +1,3 @@
-// app/cart/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -6,12 +5,11 @@ import Link from "next/link";
 import { useCart } from "@/app/components/cart/cart-context";
 
 export default function CartPage() {
-  // alles aus dem Context holen, items bekommt Default-Array
-  const { items = [], removeItem, clearCart, totalAmount }: any = useCart() ?? {
-    items: [],
-  };
+  const { items = [], removeItem, clearCart, totalAmount }: any =
+    useCart() ?? {
+      items: [],
+    };
 
-  // Fallback, falls totalAmount im Context noch nicht definiert ist
   const computedTotal =
     typeof totalAmount === "number"
       ? totalAmount
@@ -24,15 +22,11 @@ export default function CartPage() {
   const safeTotal = Number.isFinite(computedTotal) ? computedTotal : 0;
   const hasItems = items.length > 0;
 
-  // EIN gemeinsamer Card-Style
-  const panelClass =
-    [
-      "rounded-3xl px-4 py-4 text-sm",
-      // light
-      "bg-[#F7F4EF] text-neutral-800 shadow-md shadow-black/5 ring-1 ring-black/5",
-      // dark
-      "dark:bg-[#020617] dark:text-slate-100 dark:shadow-black/50 dark:ring-slate-700",
-    ].join(" ");
+  const panelClass = [
+    "rounded-3xl px-4 py-4 text-sm",
+    "bg-[#F7F4EF] text-neutral-800 shadow-md shadow-black/5 ring-1 ring-black/5",
+    "dark:bg-[#020617] dark:text-slate-100 dark:shadow-black/50 dark:ring-slate-700",
+  ].join(" ");
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -52,11 +46,11 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,0.8fr)]">
-          {/* Linke Spalte: Positionen */}
+          {/* linke Spalte: Positionen */}
           <div className="space-y-4">
-            {items.map((item: any) => (
+            {items.map((item: any, idx: number) => (
               <div
-                key={item.id}
+                key={`${item.id}-${idx}`}
                 className={panelClass + " flex items-center gap-4"}
               >
                 <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-[#111217]">
@@ -72,6 +66,15 @@ export default function CartPage() {
 
                 <div className="flex flex-1 flex-col gap-1">
                   <p className="text-sm font-medium">{item.title}</p>
+
+                  {item.category === "ring" && item.ring?.size && (
+                    <p className="text-xs text-neutral-500 dark:text-slate-400">
+                      Ringgrösse:{" "}
+                      {item.ring.sizeType === "damen" ? "Damen" : "Herren"}{" "}
+                      {item.ring.size}
+                    </p>
+                  )}
+
                   <p className="text-xs text-neutral-500 dark:text-slate-400">
                     Menge: {item.quantity ?? 1}
                   </p>
@@ -93,7 +96,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Rechte Spalte: Zusammenfassung */}
+          {/* rechte Spalte: Zusammenfassung */}
           <aside className={panelClass + " flex flex-col gap-4 px-6 py-6"}>
             <h2 className="text-base font-semibold tracking-tight">
               Zusammenfassung
@@ -110,16 +113,13 @@ export default function CartPage() {
               Versandkosten und Steuern werden im nächsten Schritt berechnet.
             </p>
 
-            {/* Zur Kasse */}
-           <Link
-  href="/checkout"
-  className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[#4B5563] px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/25 transition hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FBBF77] dark:bg-[#FBBF77] dark:text-[#1F2933] dark:hover:bg-[#F59E0B]"
->
-  Zur Kasse
-</Link>
+            <Link
+              href="/checkout"
+              className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-[#4B5563] px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-black/25 transition hover:bg-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FBBF77] dark:bg-[#FBBF77] dark:text-[#1F2933] dark:hover:bg-[#F59E0B]"
+            >
+              Zur Kasse
+            </Link>
 
-
-            {/* Warenkorb leeren */}
             <button
               type="button"
               onClick={clearCart}
@@ -127,8 +127,6 @@ export default function CartPage() {
             >
               Warenkorb leeren
             </button>
-
-           
           </aside>
         </div>
       )}

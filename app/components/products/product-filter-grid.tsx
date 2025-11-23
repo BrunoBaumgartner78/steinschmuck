@@ -18,7 +18,16 @@ type ColorTheme =
   | undefined;
 
 type MetalType = "gold" | "silver" | undefined;
-type Category = "necklace" | "pendant" | "ring" | undefined;
+
+// 🔸 Kategorien passend zum Sanity-Schema
+type Category =
+  | "kette"
+  | "anhänger"
+  | "ring"
+  | "ohrring"
+  | "bracelet"
+  | "kombination"
+  | undefined;
 
 type Product = {
   _id: string;
@@ -45,7 +54,16 @@ type ColorFilterId =
   | "violet";
 
 type MetalFilterId = "all" | "gold" | "silver";
-type CategoryFilterId = "all" | "necklace" | "pendant" | "ring";
+
+// 🔸 Filter-IDs ebenfalls anpassen
+type CategoryFilterId =
+  | "all"
+  | "kette"
+  | "anhänger"
+  | "ring"
+  | "ohrring"
+  | "bracelet"
+  | "kombination";
 
 const COLOR_FILTERS: { id: ColorFilterId; label: string }[] = [
   { id: "all", label: "Alle Farben" },
@@ -68,9 +86,12 @@ const METAL_FILTERS: { id: MetalFilterId; label: string }[] = [
 
 const CATEGORY_FILTERS: { id: CategoryFilterId; label: string }[] = [
   { id: "all", label: "Alle Kategorien" },
-  { id: "necklace", label: "Ketten" },
-  { id: "pendant", label: "Anhänger" },
+  { id: "kette", label: "Ketten" },
+  { id: "anhänger", label: "Anhänger" },
   { id: "ring", label: "Ringe" },
+  { id: "ohrring", label: "Ohrringe" },
+  { id: "bracelet", label: "Bracelets" },
+  { id: "kombination", label: "Kombinationen" },
 ];
 
 // Sanity-String → internes ColorTheme
@@ -154,7 +175,8 @@ function getCardTheme(theme: ColorTheme) {
 export function ProductFilterGrid({ products }: { products: Product[] }) {
   const [activeColor, setActiveColor] = useState<ColorFilterId>("all");
   const [activeMetal, setActiveMetal] = useState<MetalFilterId>("all");
-  const [activeCategory, setActiveCategory] = useState<CategoryFilterId>("all");
+  const [activeCategory, setActiveCategory] =
+    useState<CategoryFilterId>("all");
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {

@@ -46,7 +46,6 @@ export const latestProductsQuery = groq`
 /**
  * Einzelnes Produkt nach Slug (für Detailseite + Metadata)
  */
-// sanity/lib/queries.ts
 export const productBySlugQuery = groq`
 *[_type == "product" && slug.current == $slug][0] {
   _id,
@@ -64,7 +63,6 @@ export const productBySlugQuery = groq`
   category,
 }
 `;
-
 
 /**
  * Nur Slugs aller Produkte (für sitemap.xml)

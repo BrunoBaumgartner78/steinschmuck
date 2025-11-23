@@ -1,4 +1,3 @@
-// app/components/cart/cart-context.tsx
 "use client";
 
 import {
@@ -9,12 +8,19 @@ import {
   useMemo,
 } from "react";
 
+export type RingInfo = {
+  sizeType: "damen" | "herren";
+  size: string; // z.B. "52"
+};
+
 export type CartItem = {
   id: string;
   title: string;
   price: number;
   image?: string;
   quantity: number;
+  category?: string | null; // z.B. "ring"
+  ring?: RingInfo | null;
 };
 
 export type CartContextValue = {
@@ -23,7 +29,7 @@ export type CartContextValue = {
   removeItem: (id: string) => void;
   clearCart: () => void;
   totalAmount: number;
-  totalQuantity: number; // 👈 neu
+  totalQuantity: number;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -36,14 +42,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     quantity: number = 1
   ): void {
     setItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id);
+      const existing = prev.find(
+        (p) =>
+          p.id === item.id &&
+          JSON.stringify(p.ring ?? null) === JSON.stringify(item.ring ?? null)
+      );
+
       if (existing) {
+        // gleiche Ringgrösse → Menge erhöhen
         return prev.map((p) =>
-          p.id === item.id
+          p.id === item.id &&
+          JSON.stringify(p.ring ?? null) === JSON.stringify(item.ring ?? null)
             ? { ...p, quantity: p.quantity + quantity }
             : p
         );
       }
+
       return [...prev, { ...item, quantity }];
     });
   }

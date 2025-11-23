@@ -3,7 +3,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useCart } from "@/app/components/cart/cart-context";
+import { useCart, CartItem } from "@/app/components/cart/cart-context";
 
 type CustomerForm = {
   name: string;
@@ -15,9 +15,7 @@ type CustomerForm = {
 };
 
 export default function CheckoutPage() {
-  // flexibel typisieren, damit TS nicht nervt, egal wie dein Context genau aussieht
-  const { items = [], clearCart }: any = useCart();
-
+  const { items, clearCart } = useCart();
   const [form, setForm] = useState<CustomerForm>({
     name: "",
     email: "",
@@ -32,10 +30,7 @@ export default function CheckoutPage() {
 
   const hasItems = items.length > 0;
 
-  const handleChange = (
-    field: keyof CustomerForm,
-    value: string
-  ) => {
+  const handleChange = (field: keyof CustomerForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -60,11 +55,13 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer: form,
-          items: items.map((item: any) => ({
+          items: items.map((item: CartItem) => ({
             id: item.id,
             title: item.title,
             price: item.price,
             quantity: item.quantity ?? 1,
+            ring: item.ring ?? null,
+            category: item.category ?? null,
           })),
         }),
       });
@@ -78,15 +75,12 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         throw new Error(
-          data.error ||
-            `Checkout fehlgeschlagen (Status ${res.status}).`
+          data.error || `Checkout fehlgeschlagen (Status ${res.status}).`
         );
       }
 
-      // ✅ Jetzt: Fake-Erfolg – später durch Stripe-URL ersetzen
       if (data.url) {
-        // Warenkorb leeren
-        clearCart?.();
+        clearCart();
         window.location.href = data.url;
         return;
       }
@@ -106,9 +100,8 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       <p className="mb-6 text-sm text-neutral-600 dark:text-neutral-300">
-        Bitte gib deine Kontaktdaten und Lieferadresse ein. Die eigentliche
-        Stripe-Zahlung wird später integriert – aktuell wird der Checkout
-        testweise abgeschlossen.
+        Bitte gib deine Kontaktdaten und Lieferadresse ein. Die Zahlung wird
+        über Stripe abgewickelt.
       </p>
 
       {!hasItems && (
@@ -270,8 +263,8 @@ export default function CheckoutPage() {
           </button>
 
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Die Stripe-Zahlung wird im nächsten Schritt integriert. Aktuell
-            werden die Daten nur testweise verarbeitet.
+            Deine Ringgrösse und Lieferadresse werden sicher an Stripe
+            übergeben und dort als Bestell-Information gespeichert.
           </p>
 
           <Link
