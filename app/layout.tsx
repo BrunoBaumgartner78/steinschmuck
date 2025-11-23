@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 import { SiteHeader } from "./components/layout/site-header";
 import { Footer } from "./components/layout/footer";
-import { CookieBanner } from "./components/layout/cookie-bannerr";
+import { CookieBanner } from "./components/layout/cookie-banner";
 import { Analytics } from "./components/layout/analythics";
 
 export const metadata: Metadata = {
